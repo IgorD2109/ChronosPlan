@@ -18,7 +18,7 @@
             --selection-bg: rgba(37, 99, 235, 0.15);
             --selection-border: #2563eb;
             --sidebar-width: 320px;
-            --slot-height: 18px;
+            --slot-height: 18px; /* 18px por 15min = 72px/hora */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,51 +41,57 @@
         .next-free-value { font-weight: 600; color: #1e3a8a; margin-top: 0.15rem; }
 
         .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
-        .tab-btn { flex: 1; padding: 0.4rem 0.2rem; background: none; border: none; border-bottom: 2px solid transparent; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); }
+        .tab-btn { flex: 1; padding: 0.5rem 0.2rem; background: none; border: none; border-bottom: 2px solid transparent; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); font-weight: 500; }
         .tab-btn.active { border-bottom-color: var(--primary); color: var(--primary); font-weight: 600; }
         .tab-contents { flex: 1; overflow-y: auto; }
         .tab-content { display: none; padding-top: 0.75rem; }
         .tab-content.active { display: block; }
 
-        .inbox-input-group { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
-        .inbox-input-group input { flex: 1; padding: 0.4rem 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; }
+        .input-group { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+        .input-group input { flex: 1; padding: 0.45rem 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; }
 
         .item-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-        .item-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; background: var(--bg-main); border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); }
+        .item-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: var(--bg-main); border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); }
+        .item-list li.empty { color: var(--text-muted); font-size: 0.8rem; font-style: italic; border: none; background: none; justify-content: center; }
 
         /* Calendário */
         .calendar-container { flex: 1; display: flex; flex-direction: column; overflow: auto; position: relative; background: var(--bg-card); }
-        .calendar-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); min-width: 800px; position: relative; }
+        .calendar-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); min-width: 850px; position: relative; }
         .time-col { border-right: 1px solid var(--border-color); background: var(--bg-main); z-index: 5; }
-        .day-col { border-right: 1px solid var(--border-color); position: relative; min-height: calc(96 * var(--slot-height)); }
+        .day-col { border-right: 1px solid var(--border-color); position: relative; min-height: calc(72 * var(--slot-height)); user-select: none; }
         .grid-header { position: sticky; top: 0; background: var(--bg-card); z-index: 8; border-bottom: 1px solid var(--border-color); text-align: center; padding: 0.5rem 0; font-size: 0.85rem; font-weight: 600; }
 
-        /* Grade 15 min */
+        /* Grade de 15 minutos */
         .slot-15m { height: var(--slot-height); border-bottom: 1px dashed var(--grid-line-15min); box-sizing: border-box; cursor: pointer; }
         .slot-15m.hour-start { border-bottom: 1px solid var(--grid-line-hour); }
         .time-label { height: calc(4 * var(--slot-height)); font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.2; padding-top: 2px; border-bottom: 1px solid var(--border-color); }
 
         .selection-ghost { position: absolute; left: 2px; right: 2px; background: var(--selection-bg); border: 2px dashed var(--selection-border); border-radius: 4px; pointer-events: none; z-index: 15; }
-        .activity-block { position: absolute; left: 2px; right: 2px; background: #dbeafe; border-left: 4px solid var(--primary); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; overflow: hidden; z-index: 10; cursor: move; user-select: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .activity-block.completed { opacity: 0.65; text-decoration: line-through; background: #e2e8f0; border-left-color: #64748b; }
+        .activity-block { position: absolute; left: 2px; right: 2px; background: #dbeafe; border-left: 4px solid var(--primary); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; overflow: hidden; z-index: 10; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .activity-block:hover { transform: scale(1.01); }
+        .activity-block.completed { opacity: 0.6; text-decoration: line-through; background: #e2e8f0; border-left-color: #64748b; }
 
-        /* Modais / Popovers */
-        .popover { position: absolute; background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; width: 260px; }
+        /* Popover e Modais Customizados */
+        .popover { position: absolute; background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.85rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; width: 280px; }
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; }
-        .modal-box { background: white; padding: 1.5rem; border-radius: 12px; max-width: 480px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-box { background: white; padding: 1.5rem; border-radius: 12px; max-width: 450px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
 
-        .empty-state-card { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; z-index: 30; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .empty-state-card { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; z-index: 30; box-shadow: 0 10px 20px rgba(0,0,0,0.05); max-width: 400px; width: 90%; }
         .toast-container { position: fixed; bottom: 1rem; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 300; }
         .toast { background: var(--text-main); color: white; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
+        /* Botões */
         .btn-primary { background: var(--primary); color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 500; cursor: pointer; }
         .btn-primary:hover { background: var(--primary-hover); }
         .btn-secondary { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-danger { background: #ef4444; color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; }
         .btn-small { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
         .btn-block { width: 100%; margin-bottom: 0.5rem; }
-        .btn-link { background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline; }
+        .btn-link { background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline; font-size: 0.8rem; }
         .hidden { display: none !important; }
         .mobile-only { display: none; }
+        .divider { border: none; border-top: 1px solid var(--border-color); margin: 0.75rem 0; }
 
         @media (max-width: 768px) {
             .mobile-only { display: flex; }
@@ -100,8 +106,9 @@
 </head>
 <body>
     <div id="app-container" class="app-layout">
+        <!-- Header -->
         <header class="app-header">
-            <button id="toggle-sidebar-btn" class="btn-icon mobile-only" aria-label="Abrir menu">☰</button>
+            <button id="toggle-sidebar-btn" class="btn-secondary mobile-only" aria-label="Abrir menu">☰ Menu</button>
             <div class="header-title">
                 <h1>ChronosPlan</h1>
                 <span id="current-week-label" class="week-label"></span>
@@ -114,6 +121,7 @@
         </header>
 
         <div class="main-content">
+            <!-- Sidebar -->
             <aside id="sidebar" class="sidebar">
                 <div class="sidebar-section free-time-card">
                     <h3>Tempo Livre Hoje</h3>
@@ -127,6 +135,7 @@
                     </div>
                 </div>
 
+                <!-- Abas -->
                 <div class="sidebar-tabs">
                     <button class="tab-btn active" data-tab="inbox-tab">Inbox</button>
                     <button class="tab-btn" data-tab="goals-tab">Metas</button>
@@ -134,54 +143,87 @@
                 </div>
 
                 <div class="tab-contents">
+                    <!-- Tab Inbox -->
                     <div id="inbox-tab" class="tab-content active">
-                        <div class="inbox-input-group">
-                            <input type="text" id="inbox-input" placeholder="Capturar ideia..." />
-                            <button id="inbox-add-btn" class="btn-small">+</button>
+                        <div class="input-group">
+                            <input type="text" id="inbox-input" placeholder="Capturar ideia/tarefa..." />
+                            <button id="inbox-add-btn" class="btn-primary">+</button>
                         </div>
                         <ul id="inbox-list" class="item-list"></ul>
                     </div>
 
+                    <!-- Tab Metas -->
                     <div id="goals-tab" class="tab-content">
+                        <div class="input-group">
+                            <input type="text" id="goal-input" placeholder="Nova meta..." />
+                            <button id="goal-add-btn" class="btn-primary">+</button>
+                        </div>
                         <ul id="goals-list" class="item-list"></ul>
                     </div>
 
+                    <!-- Tab Ajustes -->
                     <div id="settings-tab" class="tab-content">
-                        <h4>Backup</h4>
-                        <button id="export-backup-btn" class="btn-secondary btn-block">Exportar JSON</button>
+                        <h4 style="margin-bottom:0.5rem; font-size:0.9rem;">Backup e Restauração</h4>
+                        <button id="export-backup-btn" class="btn-secondary btn-block">Exportar Backup (JSON)</button>
+                        <label for="import-backup-file" class="btn-secondary btn-block" style="display:block; text-align:center; cursor:pointer;">Importar Backup (JSON)</label>
+                        <input type="file" id="import-backup-file" accept=".json" style="display:none;">
                     </div>
                 </div>
             </aside>
 
             <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
+            <!-- Calendário Principal -->
             <main class="calendar-container">
                 <div id="empty-state-banner" class="empty-state-card hidden">
                     <h2>Bem-vindo ao ChronosPlan!</h2>
-                    <p>Clique em qualquer horário na grade para adicionar uma atividade.</p>
+                    <p style="margin: 0.75rem 0; color: var(--text-muted); font-size: 0.9rem;">
+                        Sua agenda está vazia para esta semana. Clique e arraste em qualquer horário da grade para criar sua primeira atividade.
+                    </p>
+                    <button id="empty-sample-btn" class="btn-primary">Carregar Exemplo de Rotina</button>
                 </div>
+
                 <div id="calendar-grid" class="calendar-grid"></div>
             </main>
         </div>
     </div>
 
+    <!-- Popover de Criação Ultrarrápida -->
     <div id="fast-create-popover" class="popover hidden">
-        <div class="popover-header">
-            <span id="fast-create-time-badge" class="time-badge">09:00 - 09:45</span>
+        <div style="font-size:0.8rem; font-weight:600; color:var(--primary); margin-bottom:0.4rem;">
+            <span id="fast-create-time-badge">09:00 - 09:45</span>
         </div>
-        <input type="text" id="fast-create-title" placeholder="Título da atividade + Enter" autofocus style="width:100%; margin:8px 0; padding:4px;" />
-        <button id="fast-create-save-btn" class="btn-primary btn-small">Salvar</button>
+        <input type="text" id="fast-create-title" placeholder="Título da atividade..." autofocus style="width:100%; padding:0.4rem; border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem; margin-bottom:0.5rem;" />
+        
+        <div style="margin-bottom:0.5rem;">
+            <label style="font-size:0.75rem; color:var(--text-muted); display:block;">Recorrência:</label>
+            <select id="fast-create-recurrence" style="width:100%; padding:0.3rem; font-size:0.8rem; border-radius:4px; border:1px solid var(--border-color);">
+                <option value="none">Não se repete</option>
+                <option value="daily">Diariamente</option>
+                <option value="weekdays">Segunda a Sexta</option>
+                <option value="weekly">Semanalmente</option>
+            </select>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button id="fast-create-save-btn" class="btn-primary btn-small">Salvar (Enter)</button>
+            <button id="fast-create-cancel-btn" class="btn-link">Cancelar</button>
+        </div>
     </div>
 
+    <!-- Modais Customizados -->
     <div id="modal-backdrop" class="modal-backdrop hidden">
         <div id="modal-container" class="modal-box"></div>
     </div>
+
+    <!-- Toasts -->
     <div id="toast-container" class="toast-container"></div>
 
     <script>
-        // LÓGICA COMPLETA DO CHRONOSPLAN
-        const STORAGE_KEY = 'chronosplan_data_v2';
+        // CHRONOSPLAN LOGIC - FULL CONSOLIDATED ENGINE
+        const STORAGE_KEY = 'chronosplan_data_v3';
 
+        // --- UTILITÁRIOS ---
         function snapTo15Minutes(totalMinutes) {
             return Math.round(totalMinutes / 15) * 15;
         }
@@ -201,7 +243,7 @@
         function getStartOfWeek(date) {
             const d = new Date(date);
             const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Segunda-feira
             d.setDate(diff);
             d.setHours(0,0,0,0);
             return d;
@@ -232,10 +274,56 @@
             return merged;
         }
 
+        // --- GERENCIAMENTO DE RECORRÊNCIA ---
+        function expandRecurrenceForDate(activity, targetDate) {
+            const targetKey = formatDateKey(targetDate);
+
+            if (!activity.recurrence || activity.recurrence.type === 'none') {
+                return activity.date === targetKey ? activity : null;
+            }
+
+            const startDate = new Date(activity.date + 'T00:00:00');
+            const currentTarget = new Date(targetKey + 'T00:00:00');
+
+            if (currentTarget < startDate) return null;
+
+            // Checar Exceções
+            const exception = activity.exceptions && activity.exceptions[targetKey];
+            if (exception && exception.type === 'deleted') return null;
+
+            const dayOfWeek = currentTarget.getDay();
+            let matches = false;
+
+            switch (activity.recurrence.type) {
+                case 'daily':
+                    matches = true;
+                    break;
+                case 'weekdays':
+                    matches = dayOfWeek >= 1 && dayOfWeek <= 5;
+                    break;
+                case 'weekly':
+                    matches = dayOfWeek === startDate.getDay();
+                    break;
+            }
+
+            if (!matches) return null;
+
+            return {
+                ...activity,
+                instanceDate: targetKey,
+                completed: exception?.type === 'completed' ? true : (activity.completed || false),
+                title: exception?.modifiedData?.title || activity.title,
+                startTime: exception?.modifiedData?.startTime || activity.startTime,
+                endTime: exception?.modifiedData?.endTime || activity.endTime
+            };
+        }
+
+        // --- PERSISTÊNCIA ---
         function loadAppData() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
-                return raw ? JSON.parse(raw) : { activities: [], inbox: [], goals: [] };
+                if (!raw) return { activities: [], inbox: [], goals: [] };
+                return JSON.parse(raw);
             } catch (e) {
                 return { activities: [], inbox: [], goals: [] };
             }
@@ -245,15 +333,85 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        class ChronosApp {
+        // --- INTERFACE (UI) & MODAIS ---
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function closeModal() {
+            document.getElementById('modal-backdrop').classList.add('hidden');
+        }
+
+        function showConfirmModal({ title, message, onConfirm }) {
+            const container = document.getElementById('modal-container');
+            container.innerHTML = `
+                <h3 style="margin-bottom:0.5rem; color:var(--text-main);">${title}</h3>
+                <p style="margin-bottom:1.25rem; color:var(--text-muted); font-size:0.9rem;">${message}</p>
+                <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+                    <button id="modal-cancel" class="btn-secondary">Cancelar</button>
+                    <button id="modal-ok" class="btn-primary">Confirmar</button>
+                </div>
+            `;
+            document.getElementById('modal-backdrop').classList.remove('hidden');
+
+            document.getElementById('modal-cancel').onclick = closeModal;
+            document.getElementById('modal-ok').onclick = () => {
+                closeModal();
+                onConfirm();
+            };
+        }
+
+        function showActivityOptionsModal({ activity, onCompleteToggle, onDelete }) {
+            const container = document.getElementById('modal-container');
+            const isRecurrent = activity.recurrence && activity.recurrence.type !== 'none';
+
+            container.innerHTML = `
+                <h3 style="margin-bottom:0.25rem;">${activity.title}</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+                    ${activity.startTime} - ${activity.endTime} ${isRecurrent ? ' (Recorrente)' : ''}
+                </p>
+                <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+                    <button id="btn-toggle-comp" class="btn-primary btn-block">
+                        ${activity.completed ? 'Marcar como Não Concluída' : 'Marcar como Concluída'}
+                    </button>
+                    <button id="btn-delete-act" class="btn-danger btn-block">Excluir Atividade</button>
+                </div>
+                <div style="text-align:right;">
+                    <button id="btn-close-modal" class="btn-secondary">Fechar</button>
+                </div>
+            `;
+            document.getElementById('modal-backdrop').classList.remove('hidden');
+
+            document.getElementById('btn-close-modal').onclick = closeModal;
+            document.getElementById('btn-toggle-comp').onclick = () => {
+                closeModal();
+                onCompleteToggle(isRecurrent);
+            };
+            document.getElementById('btn-delete-act').onclick = () => {
+                closeModal();
+                onDelete(isRecurrent);
+            };
+        }
+
+        // --- APLICAÇÃO PRINCIPAL ---
+        class ChronosPlan {
             constructor() {
                 this.data = loadAppData();
                 this.currentWeekStart = getStartOfWeek(new Date());
+                this.mobileActiveDay = 0;
+                this.pendingCreation = null;
+
                 this.initUI();
                 this.render();
             }
 
             initUI() {
+                // Navegação por Semanas
                 document.getElementById('prev-week-btn').onclick = () => this.changeWeek(-7);
                 document.getElementById('next-week-btn').onclick = () => this.changeWeek(7);
                 document.getElementById('today-btn').onclick = () => {
@@ -261,28 +419,51 @@
                     this.render();
                 };
 
+                // Abas da Sidebar
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        btn.classList.add('active');
+                        document.getElementById(btn.dataset.tab).classList.add('active');
+                    };
+                });
+
+                // Sidebar Mobile
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                document.getElementById('toggle-sidebar-btn').onclick = () => {
+                    sidebar.classList.add('open');
+                    overlay.classList.add('active');
+                };
+                overlay.onclick = () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                };
+
+                // Adicionar Item ao Inbox
+                document.getElementById('inbox-add-btn').onclick = () => this.addInboxItem();
+                document.getElementById('inbox-input').onkeydown = (e) => { if (e.key === 'Enter') this.addInboxItem(); };
+
+                // Adicionar Meta
+                document.getElementById('goal-add-btn').onclick = () => this.addGoalItem();
+                document.getElementById('goal-input').onkeydown = (e) => { if (e.key === 'Enter') this.addGoalItem(); };
+
+                // Popover de Criação
+                document.getElementById('fast-create-save-btn').onclick = () => this.saveFastActivity();
+                document.getElementById('fast-create-cancel-btn').onclick = () => {
+                    document.getElementById('fast-create-popover').classList.add('hidden');
+                };
                 document.getElementById('fast-create-title').onkeydown = (e) => {
                     if (e.key === 'Enter') this.saveFastActivity();
                 };
-                document.getElementById('fast-create-save-btn').onclick = () => this.saveFastActivity();
 
-                document.getElementById('inbox-add-btn').onclick = () => {
-                    const inp = document.getElementById('inbox-input');
-                    if (inp.value.trim()) {
-                        this.data.inbox.push({ id: Date.now(), text: inp.value.trim() });
-                        saveAppData(this.data);
-                        inp.value = '';
-                        this.render();
-                    }
-                };
+                // Backup
+                document.getElementById('export-backup-btn').onclick = () => this.exportBackup();
+                document.getElementById('import-backup-file').onchange = (e) => this.importBackup(e);
 
-                document.getElementById('export-backup-btn').onclick = () => {
-                    const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `chronosplan_backup.json`;
-                    a.click();
-                };
+                // Exemplo Inicial
+                document.getElementById('empty-sample-btn').onclick = () => this.loadSampleData();
             }
 
             changeWeek(days) {
@@ -302,34 +483,33 @@
 
             render() {
                 const weekDates = this.getWeekDates();
+
+                // Cabeçalho de Datas
                 const startLabel = weekDates[0].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
                 const endLabel = weekDates[6].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
                 document.getElementById('current-week-label').textContent = `${startLabel} - ${endLabel}`;
 
                 this.renderGrid(weekDates);
-                this.calculateFreeTime();
+                this.renderFreeTimeMetrics();
+                this.renderSidebarLists();
 
-                // Inbox render
-                const inboxList = document.getElementById('inbox-list');
-                inboxList.innerHTML = '';
-                this.data.inbox.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item.text;
-                    inboxList.appendChild(li);
-                });
-
+                // Banner de estado vazio
                 const emptyBanner = document.getElementById('empty-state-banner');
-                if (this.data.activities.length === 0) emptyBanner.classList.remove('hidden');
-                else emptyBanner.classList.add('hidden');
+                if (this.data.activities.length === 0) {
+                    emptyBanner.classList.remove('hidden');
+                } else {
+                    emptyBanner.classList.add('hidden');
+                }
             }
 
             renderGrid(weekDates) {
                 const container = document.getElementById('calendar-grid');
                 container.innerHTML = '';
 
+                // Coluna do Tempo (06:00 às 23:00)
                 const timeCol = document.createElement('div');
                 timeCol.className = 'time-col';
-                timeCol.innerHTML = '<div class="grid-header">Hora</div>';
+                timeCol.appendChild(this.createGridHeader('Hora'));
 
                 for (let h = 6; h <= 23; h++) {
                     const label = document.createElement('div');
@@ -339,15 +519,18 @@
                 }
                 container.appendChild(timeCol);
 
-                weekDates.forEach((date) => {
+                // Colunas dos Dias
+                weekDates.forEach((date, idx) => {
                     const dayCol = document.createElement('div');
-                    dayCol.className = 'day-col';
-                    dayCol.dataset.date = formatDateKey(date);
+                    const dateKey = formatDateKey(date);
+                    dayCol.className = `day-col ${idx === this.mobileActiveDay ? 'active-mobile-day' : ''}`;
+                    dayCol.dataset.date = dateKey;
 
                     const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' }).toUpperCase();
-                    dayCol.innerHTML = `<div class="grid-header">${dayName} ${date.getDate()}</div>`;
+                    dayCol.appendChild(this.createGridHeader(`${dayName} ${date.getDate()}`));
 
-                    for (let slot = 24; slot <= 95; slot++) {
+                    // Renderizar 68 Slots de 15 Min (06:00 as 23:00)
+                    for (let slot = 24; slot <= 91; slot++) {
                         const slotDiv = document.createElement('div');
                         const minutes = slot * 15;
                         slotDiv.className = `slot-15m ${slot % 4 === 0 ? 'hour-start' : ''}`;
@@ -355,81 +538,378 @@
                         dayCol.appendChild(slotDiv);
                     }
 
-                    // Renderizar Atividades do dia
-                    const dateKey = formatDateKey(date);
-                    this.data.activities.filter(a => a.date === dateKey).forEach(act => {
-                        const startMin = parseTimeToMinutes(act.startTime);
-                        const endMin = parseTimeToMinutes(act.endTime);
-                        const topPx = (startMin - 360) * (18 / 15);
-                        const heightPx = (endMin - startMin) * (18 / 15);
-
-                        const block = document.createElement('div');
-                        block.className = 'activity-block';
-                        block.style.top = `${topPx}px`;
-                        block.style.height = `${heightPx}px`;
-                        block.innerHTML = `<strong>${act.title}</strong><div>${act.startTime} - ${act.endTime}</div>`;
-                        dayCol.appendChild(block);
+                    // Renderizar Atividades do Dia (Expandindo Recorrências)
+                    this.data.activities.forEach(act => {
+                        const instance = expandRecurrenceForDate(act, date);
+                        if (instance) {
+                            const block = this.createActivityBlock(instance);
+                            dayCol.appendChild(block);
+                        }
                     });
 
-                    // Evento de clique para criar
-                    dayCol.onclick = (e) => {
-                        if (e.target.classList.contains('slot-15m')) {
-                            const timeStr = e.target.dataset.time;
-                            const startMin = parseTimeToMinutes(timeStr);
-                            const endMin = startMin + 45; // Duração padrão 45m
-                            this.openFastCreate(dateKey, timeStr, formatMinutesToTime(endMin), e.clientX, e.clientY);
-                        }
-                    };
-
+                    this.attachGridInteractions(dayCol);
                     container.appendChild(dayCol);
                 });
             }
 
-            calculateFreeTime() {
-                const todayKey = formatDateKey(new Date());
-                const todayActs = this.data.activities.filter(a => a.date === todayKey);
-                const intervals = todayActs.map(a => ({ start: parseTimeToMinutes(a.startTime), end: parseTimeToMinutes(a.endTime) }));
-                const merged = mergeOverlappingIntervals(intervals);
+            createGridHeader(text) {
+                const h = document.createElement('div');
+                h.className = 'grid-header';
+                h.textContent = text;
+                return h;
+            }
 
-                let plannedMin = 0;
-                merged.forEach(i => plannedMin += (i.end - i.start));
+            createActivityBlock(act) {
+                const startMin = parseTimeToMinutes(act.startTime);
+                const endMin = parseTimeToMinutes(act.endTime);
+                const duration = Math.max(15, endMin - startMin);
 
-                const freeMin = Math.max(0, (17 * 60) - plannedMin); // 06:00 as 23:00 = 17 horas
-                document.getElementById('stat-free-time').textContent = `${Math.floor(freeMin / 60)}h ${freeMin % 60}m`;
-                document.getElementById('stat-planned-time').textContent = `${Math.floor(plannedMin / 60)}h ${plannedMin % 60}m`;
+                const topPx = (startMin - 360) * (18 / 15);
+                const heightPx = duration * (18 / 15);
+
+                const block = document.createElement('div');
+                block.className = `activity-block ${act.completed ? 'completed' : ''}`;
+                block.style.top = `${topPx}px`;
+                block.style.height = `${heightPx}px`;
+
+                block.innerHTML = `
+                    <strong>${act.title}</strong>
+                    <div>${act.startTime} - ${act.endTime}</div>
+                `;
+
+                block.onclick = (e) => {
+                    e.stopPropagation();
+                    this.handleActivityClick(act);
+                };
+
+                return block;
+            }
+
+            attachGridInteractions(dayCol) {
+                let isSelecting = false;
+                let startY = 0;
+                let ghost = null;
+                let startTimeStr = '';
+
+                dayCol.onmousedown = (e) => {
+                    if (e.target.classList.contains('activity-block') || e.target.closest('.activity-block')) return;
+                    isSelecting = true;
+                    const rect = dayCol.getBoundingClientRect();
+                    startY = e.clientY - rect.top;
+
+                    const minutes = snapTo15Minutes(Math.floor(((startY - 30) / 18) * 15) + 360);
+                    startTimeStr = formatMinutesToTime(minutes);
+
+                    ghost = document.createElement('div');
+                    ghost.className = 'selection-ghost';
+                    ghost.style.top = `${(minutes - 360) * (18 / 15) + 30}px`;
+                    ghost.style.height = '18px';
+                    dayCol.appendChild(ghost);
+                };
+
+                dayCol.onmousemove = (e) => {
+                    if (!isSelecting || !ghost) return;
+                    const rect = dayCol.getBoundingClientRect();
+                    const currentY = e.clientY - rect.top;
+                    const currentMin = snapTo15Minutes(Math.floor(((currentY - 30) / 18) * 15) + 360);
+                    const startMin = parseTimeToMinutes(startTimeStr);
+
+                    const top = Math.min(startMin, currentMin);
+                    const height = Math.max(15, Math.abs(currentMin - startMin));
+
+                    ghost.style.top = `${(top - 360) * (18 / 15) + 30}px`;
+                    ghost.style.height = `${height * (18 / 15)}px`;
+                };
+
+                dayCol.onmouseup = (e) => {
+                    if (!isSelecting) return;
+                    isSelecting = false;
+                    if (ghost) {
+                        const rect = dayCol.getBoundingClientRect();
+                        const endY = e.clientY - rect.top;
+                        const endMin = snapTo15Minutes(Math.floor(((endY - 30) / 18) * 15) + 360);
+                        const startMin = parseTimeToMinutes(startTimeStr);
+
+                        const finalStart = formatMinutesToTime(Math.min(startMin, endMin));
+                        let finalEnd = formatMinutesToTime(Math.max(startMin, endMin));
+                        if (finalStart === finalEnd) {
+                            finalEnd = formatMinutesToTime(Math.min(1380, parseTimeToMinutes(finalStart) + 45));
+                        }
+
+                        ghost.remove();
+                        ghost = null;
+                        this.openFastCreate(dayCol.dataset.date, finalStart, finalEnd, e.clientX, e.clientY);
+                    }
+                };
             }
 
             openFastCreate(dateStr, startTime, endTime, x, y) {
                 this.pendingCreation = { dateStr, startTime, endTime };
                 const popover = document.getElementById('fast-create-popover');
                 document.getElementById('fast-create-time-badge').textContent = `${startTime} - ${endTime}`;
-                popover.style.top = `${Math.min(y, window.innerHeight - 150)}px`;
-                popover.style.left = `${Math.min(x, window.innerWidth - 280)}px`;
+
+                const popX = Math.min(x, window.innerWidth - 300);
+                const popY = Math.min(y, window.innerHeight - 220);
+
+                popover.style.top = `${Math.max(10, popY)}px`;
+                popover.style.left = `${Math.max(10, popX)}px`;
                 popover.classList.remove('hidden');
-                document.getElementById('fast-create-title').focus();
+
+                const input = document.getElementById('fast-create-title');
+                input.value = '';
+                input.focus();
             }
 
             saveFastActivity() {
                 const titleInput = document.getElementById('fast-create-title');
                 const title = titleInput.value.trim();
-                if (!title) return;
+                if (!title || !this.pendingCreation) return;
 
-                this.data.activities.push({
-                    id: Date.now(),
+                const recurrenceType = document.getElementById('fast-create-recurrence').value;
+
+                const newAct = {
+                    id: 'act_' + Date.now(),
                     title,
                     date: this.pendingCreation.dateStr,
                     startTime: this.pendingCreation.startTime,
-                    endTime: this.pendingCreation.endTime
-                });
+                    endTime: this.pendingCreation.endTime,
+                    completed: false,
+                    recurrence: { type: recurrenceType }
+                };
 
+                this.data.activities.push(newAct);
                 saveAppData(this.data);
+
                 titleInput.value = '';
                 document.getElementById('fast-create-popover').classList.add('hidden');
+                showToast('Atividade criada!');
                 this.render();
+            }
+
+            handleActivityClick(act) {
+                showActivityOptionsModal({
+                    activity: act,
+                    onCompleteToggle: (isRecurrent) => {
+                        if (isRecurrent) {
+                            const original = this.data.activities.find(a => a.id === act.id);
+                            if (original) {
+                                original.exceptions = original.exceptions || {};
+                                const currentStatus = original.exceptions[act.instanceDate]?.type === 'completed';
+                                original.exceptions[act.instanceDate] = { type: currentStatus ? 'none' : 'completed' };
+                            }
+                        } else {
+                            act.completed = !act.completed;
+                        }
+                        saveAppData(this.data);
+                        this.render();
+                        showToast('Status atualizado!');
+                    },
+                    onDelete: (isRecurrent) => {
+                        if (isRecurrent) {
+                            const original = this.data.activities.find(a => a.id === act.id);
+                            if (original) {
+                                original.exceptions = original.exceptions || {};
+                                original.exceptions[act.instanceDate] = { type: 'deleted' };
+                            }
+                        } else {
+                            this.data.activities = this.data.activities.filter(a => a.id !== act.id);
+                        }
+                        saveAppData(this.data);
+                        this.render();
+                        showToast('Atividade removida.');
+                    }
+                });
+            }
+
+            renderFreeTimeMetrics() {
+                const today = new Date();
+                const todayKey = formatDateKey(today);
+
+                // Coletar atividades ativas para hoje
+                const todayActs = [];
+                this.data.activities.forEach(a => {
+                    const inst = expandRecurrenceForDate(a, today);
+                    if (inst) todayActs.push(inst);
+                });
+
+                const intervals = todayActs.map(a => ({
+                    start: parseTimeToMinutes(a.startTime),
+                    end: parseTimeToMinutes(a.endTime)
+                }));
+
+                const merged = mergeOverlappingIntervals(intervals);
+
+                const dayStartMin = 360; // 06:00
+                const dayEndMin = 1380;  // 23:00
+
+                let plannedMin = 0;
+                merged.forEach(int => {
+                    const s = Math.max(dayStartMin, int.start);
+                    const e = Math.min(dayEndMin, int.end);
+                    if (e > s) plannedMin += (e - s);
+                });
+
+                const freeMin = Math.max(0, (dayEndMin - dayStartMin) - plannedMin);
+
+                document.getElementById('stat-free-time').textContent = `${Math.floor(freeMin / 60)}h ${freeMin % 60}m`;
+                document.getElementById('stat-planned-time').textContent = `${Math.floor(plannedMin / 60)}h ${plannedMin % 60}m`;
+
+                // Calcular Próxima Janela Livre
+                const nowMinutes = today.getHours() * 60 + today.getMinutes();
+                const checkStart = Math.max(dayStartMin, nowMinutes);
+
+                let nextFreeText = 'Nenhuma janela disponível hoje';
+                if (checkStart < dayEndMin) {
+                    const freeWindows = [];
+                    let pointer = checkStart;
+
+                    merged.filter(i => i.end > checkStart).sort((a,b) => a.start - b.start).forEach(int => {
+                        if (int.start > pointer) {
+                            freeWindows.push({ start: pointer, end: int.start });
+                        }
+                        pointer = Math.max(pointer, int.end);
+                    });
+
+                    if (pointer < dayEndMin) {
+                        freeWindows.push({ start: pointer, end: dayEndMin });
+                    }
+
+                    if (freeWindows.length > 0) {
+                        const win = freeWindows[0];
+                        const dur = win.end - win.start;
+                        const h = Math.floor(dur / 60);
+                        const m = dur % 60;
+                        const durStr = h > 0 ? `${h}h${m > 0 ? m + 'm' : ''}` : `${m}m`;
+                        nextFreeText = `${formatMinutesToTime(win.start)} → ${formatMinutesToTime(win.end)} (${durStr})`;
+                    }
+                }
+
+                document.getElementById('next-free-window').textContent = nextFreeText;
+            }
+
+            renderSidebarLists() {
+                // Inbox List
+                const inboxList = document.getElementById('inbox-list');
+                inboxList.innerHTML = '';
+                if (this.data.inbox.length === 0) {
+                    inboxList.innerHTML = '<li class="empty">Nenhuma ideia capturada.</li>';
+                } else {
+                    this.data.inbox.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <span>${item.text}</span>
+                            <button class="btn-link" style="color:#ef4444;">✕</button>
+                        `;
+                        li.querySelector('button').onclick = () => {
+                            this.data.inbox = this.data.inbox.filter(i => i.id !== item.id);
+                            saveAppData(this.data);
+                            this.render();
+                        };
+                        inboxList.appendChild(li);
+                    });
+                }
+
+                // Goals List
+                const goalsList = document.getElementById('goals-list');
+                goalsList.innerHTML = '';
+                if (this.data.goals.length === 0) {
+                    goalsList.innerHTML = '<li class="empty">Nenhuma meta definida.</li>';
+                } else {
+                    this.data.goals.forEach(goal => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                <input type="checkbox" ${goal.completed ? 'checked' : ''}>
+                                <span style="${goal.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${goal.title}</span>
+                            </label>
+                            <button class="btn-link" style="color:#ef4444;">✕</button>
+                        `;
+                        li.querySelector('input').onchange = () => {
+                            goal.completed = !goal.completed;
+                            saveAppData(this.data);
+                            this.render();
+                        };
+                        li.querySelector('button').onclick = () => {
+                            this.data.goals = this.data.goals.filter(g => g.id !== goal.id);
+                            saveAppData(this.data);
+                            this.render();
+                        };
+                        goalsList.appendChild(li);
+                    });
+                }
+            }
+
+            addInboxItem() {
+                const input = document.getElementById('inbox-input');
+                const text = input.value.trim();
+                if (!text) return;
+                this.data.inbox.push({ id: Date.now(), text });
+                saveAppData(this.data);
+                input.value = '';
+                this.render();
+                showToast('Item adicionado ao Inbox!');
+            }
+
+            addGoalItem() {
+                const input = document.getElementById('goal-input');
+                const title = input.value.trim();
+                if (!title) return;
+                this.data.goals.push({ id: Date.now(), title, completed: false });
+                saveAppData(this.data);
+                input.value = '';
+                this.render();
+                showToast('Meta criada!');
+            }
+
+            loadSampleData() {
+                const todayKey = formatDateKey(new Date());
+                this.data.activities = [
+                    { id: 'sample_1', title: 'Exercício / Corrida', date: todayKey, startTime: '07:00', endTime: '08:00', completed: false, recurrence: { type: 'weekdays' } },
+                    { id: 'sample_2', title: 'Foco Profundo - Trabalho', date: todayKey, startTime: '09:00', endTime: '11:30', completed: false, recurrence: { type: 'none' } },
+                    { id: 'sample_3', title: 'Almoço e Descanso', date: todayKey, startTime: '12:00', endTime: '13:00', completed: false, recurrence: { type: 'daily' } },
+                    { id: 'sample_4', title: 'Reunião de Alinhamento', date: todayKey, startTime: '14:00', endTime: '15:15', completed: false, recurrence: { type: 'none' } }
+                ];
+                saveAppData(this.data);
+                showToast('Exemplo de rotina carregado!');
+                this.render();
+            }
+
+            exportBackup() {
+                const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `chronosplan_backup_${formatDateKey(new Date())}.json`;
+                a.click();
+                showToast('Backup exportado com sucesso!');
+            }
+
+            importBackup(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const imported = JSON.parse(evt.target.result);
+                        if (imported && Array.isArray(imported.activities)) {
+                            this.data = imported;
+                            saveAppData(this.data);
+                            showToast('Backup restaurado!');
+                            this.render();
+                        } else {
+                            showToast('Formato JSON inválido.');
+                        }
+                    } catch (err) {
+                        showToast('Erro ao ler arquivo.');
+                    }
+                };
+                reader.readAsText(file);
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => new ChronosApp());
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app = new ChronosPlan();
+        });
     </script>
 </body>
 </html>
