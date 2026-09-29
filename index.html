@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronosPlan — Planejamento Pessoal</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --grid-line-hour: #cbd5e1;
+            --grid-line-15min: #f1f5f9;
+            --selection-bg: rgba(37, 99, 235, 0.15);
+            --selection-border: #2563eb;
+            --sidebar-width: 320px;
+            --slot-height: 18px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+        .app-layout { display: flex; flex-direction: column; height: 100vh; }
+        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; background: var(--bg-card); border-bottom: 1px solid var(--border-color); z-index: 10; }
+        .header-title h1 { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .week-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+        .main-content { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 1rem; gap: 1rem; z-index: 20; transition: transform 0.3s ease; }
+        .free-time-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.85rem; }
+        .free-time-card h3 { font-size: 0.9rem; color: #1e40af; margin-bottom: 0.5rem; }
+        .stats-box { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.5rem; }
+        .next-free-box { font-size: 0.8rem; border-top: 1px solid #dbeafe; padding-top: 0.4rem; }
+        .next-free-value { font-weight: 600; color: #1e3a8a; margin-top: 0.15rem; }
+
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
+        .tab-btn { flex: 1; padding: 0.4rem 0.2rem; background: none; border: none; border-bottom: 2px solid transparent; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); }
+        .tab-btn.active { border-bottom-color: var(--primary); color: var(--primary); font-weight: 600; }
+        .tab-contents { flex: 1; overflow-y: auto; }
+        .tab-content { display: none; padding-top: 0.75rem; }
+        .tab-content.active { display: block; }
+
+        .inbox-input-group { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+        .inbox-input-group input { flex: 1; padding: 0.4rem 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; }
+
+        .item-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+        .item-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; background: var(--bg-main); border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); }
+
+        /* Calendário */
+        .calendar-container { flex: 1; display: flex; flex-direction: column; overflow: auto; position: relative; background: var(--bg-card); }
+        .calendar-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); min-width: 800px; position: relative; }
+        .time-col { border-right: 1px solid var(--border-color); background: var(--bg-main); z-index: 5; }
+        .day-col { border-right: 1px solid var(--border-color); position: relative; min-height: calc(96 * var(--slot-height)); }
+        .grid-header { position: sticky; top: 0; background: var(--bg-card); z-index: 8; border-bottom: 1px solid var(--border-color); text-align: center; padding: 0.5rem 0; font-size: 0.85rem; font-weight: 600; }
+
+        /* Grade 15 min */
+        .slot-15m { height: var(--slot-height); border-bottom: 1px dashed var(--grid-line-15min); box-sizing: border-box; cursor: pointer; }
+        .slot-15m.hour-start { border-bottom: 1px solid var(--grid-line-hour); }
+        .time-label { height: calc(4 * var(--slot-height)); font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.2; padding-top: 2px; border-bottom: 1px solid var(--border-color); }
+
+        .selection-ghost { position: absolute; left: 2px; right: 2px; background: var(--selection-bg); border: 2px dashed var(--selection-border); border-radius: 4px; pointer-events: none; z-index: 15; }
+        .activity-block { position: absolute; left: 2px; right: 2px; background: #dbeafe; border-left: 4px solid var(--primary); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; overflow: hidden; z-index: 10; cursor: move; user-select: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .activity-block.completed { opacity: 0.65; text-decoration: line-through; background: #e2e8f0; border-left-color: #64748b; }
+
+        /* Modais / Popovers */
+        .popover { position: absolute; background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; width: 260px; }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; }
+        .modal-box { background: white; padding: 1.5rem; border-radius: 12px; max-width: 480px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        .empty-state-card { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; z-index: 30; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .toast-container { position: fixed; bottom: 1rem; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 300; }
+        .toast { background: var(--text-main); color: white; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 500; cursor: pointer; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; }
+        .btn-small { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+        .btn-block { width: 100%; margin-bottom: 0.5rem; }
+        .btn-link { background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline; }
+        .hidden { display: none !important; }
+        .mobile-only { display: none; }
+
+        @media (max-width: 768px) {
+            .mobile-only { display: flex; }
+            .sidebar { position: fixed; top: 0; bottom: 0; left: 0; transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 15; display: none; }
+            .sidebar-overlay.active { display: block; }
+            .calendar-grid { grid-template-columns: 50px 1fr; min-width: 0; }
+            .day-col:not(.active-mobile-day) { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container" class="app-layout">
+        <header class="app-header">
+            <button id="toggle-sidebar-btn" class="btn-icon mobile-only" aria-label="Abrir menu">☰</button>
+            <div class="header-title">
+                <h1>ChronosPlan</h1>
+                <span id="current-week-label" class="week-label"></span>
+            </div>
+            <div class="header-actions">
+                <button id="prev-week-btn" class="btn-secondary">&lt;</button>
+                <button id="today-btn" class="btn-secondary">Hoje</button>
+                <button id="next-week-btn" class="btn-secondary">&gt;</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside id="sidebar" class="sidebar">
+                <div class="sidebar-section free-time-card">
+                    <h3>Tempo Livre Hoje</h3>
+                    <div id="free-time-stats" class="stats-box">
+                        <div class="stat-item"><span class="label">Livre:</span> <strong id="stat-free-time">0h 00m</strong></div>
+                        <div class="stat-item"><span class="label">Planejado:</span> <strong id="stat-planned-time">0h 00m</strong></div>
+                    </div>
+                    <div class="next-free-box">
+                        <span class="label">Próxima Janela Livre:</span>
+                        <div id="next-free-window" class="next-free-value">Calculando...</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="inbox-tab">Inbox</button>
+                    <button class="tab-btn" data-tab="goals-tab">Metas</button>
+                    <button class="tab-btn" data-tab="settings-tab">Ajustes</button>
+                </div>
+
+                <div class="tab-contents">
+                    <div id="inbox-tab" class="tab-content active">
+                        <div class="inbox-input-group">
+                            <input type="text" id="inbox-input" placeholder="Capturar ideia..." />
+                            <button id="inbox-add-btn" class="btn-small">+</button>
+                        </div>
+                        <ul id="inbox-list" class="item-list"></ul>
+                    </div>
+
+                    <div id="goals-tab" class="tab-content">
+                        <ul id="goals-list" class="item-list"></ul>
+                    </div>
+
+                    <div id="settings-tab" class="tab-content">
+                        <h4>Backup</h4>
+                        <button id="export-backup-btn" class="btn-secondary btn-block">Exportar JSON</button>
+                    </div>
+                </div>
+            </aside>
+
+            <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+            <main class="calendar-container">
+                <div id="empty-state-banner" class="empty-state-card hidden">
+                    <h2>Bem-vindo ao ChronosPlan!</h2>
+                    <p>Clique em qualquer horário na grade para adicionar uma atividade.</p>
+                </div>
+                <div id="calendar-grid" class="calendar-grid"></div>
+            </main>
+        </div>
+    </div>
+
+    <div id="fast-create-popover" class="popover hidden">
+        <div class="popover-header">
+            <span id="fast-create-time-badge" class="time-badge">09:00 - 09:45</span>
+        </div>
+        <input type="text" id="fast-create-title" placeholder="Título da atividade + Enter" autofocus style="width:100%; margin:8px 0; padding:4px;" />
+        <button id="fast-create-save-btn" class="btn-primary btn-small">Salvar</button>
+    </div>
+
+    <div id="modal-backdrop" class="modal-backdrop hidden">
+        <div id="modal-container" class="modal-box"></div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+
+    <script>
+        // LÓGICA COMPLETA DO CHRONOSPLAN
+        const STORAGE_KEY = 'chronosplan_data_v2';
+
+        function snapTo15Minutes(totalMinutes) {
+            return Math.round(totalMinutes / 15) * 15;
+        }
+
+        function parseTimeToMinutes(timeStr) {
+            const [hours, mins] = timeStr.split(':').map(Number);
+            return hours * 60 + mins;
+        }
+
+        function formatMinutesToTime(minutes) {
+            const clamped = Math.max(0, Math.min(1439, minutes));
+            const h = Math.floor(clamped / 60).toString().padStart(2, '0');
+            const m = (clamped % 60).toString().padStart(2, '0');
+            return `${h}:${m}`;
+        }
+
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            d.setDate(diff);
+            d.setHours(0,0,0,0);
+            return d;
+        }
+
+        function formatDateKey(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function mergeOverlappingIntervals(intervals) {
+            if (!intervals || intervals.length === 0) return [];
+            const sorted = [...intervals].sort((a, b) => a.start - b.start);
+            const merged = [sorted[0]];
+
+            for (let i = 1; i < sorted.length; i++) {
+                const current = sorted[i];
+                const last = merged[merged.length - 1];
+                if (current.start <= last.end) {
+                    last.end = Math.max(last.end, current.end);
+                } else {
+                    merged.push({ start: current.start, end: current.end });
+                }
+            }
+            return merged;
+        }
+
+        function loadAppData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : { activities: [], inbox: [], goals: [] };
+            } catch (e) {
+                return { activities: [], inbox: [], goals: [] };
+            }
+        }
+
+        function saveAppData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        class ChronosApp {
+            constructor() {
+                this.data = loadAppData();
+                this.currentWeekStart = getStartOfWeek(new Date());
+                this.initUI();
+                this.render();
+            }
+
+            initUI() {
+                document.getElementById('prev-week-btn').onclick = () => this.changeWeek(-7);
+                document.getElementById('next-week-btn').onclick = () => this.changeWeek(7);
+                document.getElementById('today-btn').onclick = () => {
+                    this.currentWeekStart = getStartOfWeek(new Date());
+                    this.render();
+                };
+
+                document.getElementById('fast-create-title').onkeydown = (e) => {
+                    if (e.key === 'Enter') this.saveFastActivity();
+                };
+                document.getElementById('fast-create-save-btn').onclick = () => this.saveFastActivity();
+
+                document.getElementById('inbox-add-btn').onclick = () => {
+                    const inp = document.getElementById('inbox-input');
+                    if (inp.value.trim()) {
+                        this.data.inbox.push({ id: Date.now(), text: inp.value.trim() });
+                        saveAppData(this.data);
+                        inp.value = '';
+                        this.render();
+                    }
+                };
+
+                document.getElementById('export-backup-btn').onclick = () => {
+                    const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `chronosplan_backup.json`;
+                    a.click();
+                };
+            }
+
+            changeWeek(days) {
+                this.currentWeekStart.setDate(this.currentWeekStart.getDate() + days);
+                this.render();
+            }
+
+            getWeekDates() {
+                const dates = [];
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(this.currentWeekStart);
+                    d.setDate(d.getDate() + i);
+                    dates.push(d);
+                }
+                return dates;
+            }
+
+            render() {
+                const weekDates = this.getWeekDates();
+                const startLabel = weekDates[0].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+                const endLabel = weekDates[6].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+                document.getElementById('current-week-label').textContent = `${startLabel} - ${endLabel}`;
+
+                this.renderGrid(weekDates);
+                this.calculateFreeTime();
+
+                // Inbox render
+                const inboxList = document.getElementById('inbox-list');
+                inboxList.innerHTML = '';
+                this.data.inbox.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item.text;
+                    inboxList.appendChild(li);
+                });
+
+                const emptyBanner = document.getElementById('empty-state-banner');
+                if (this.data.activities.length === 0) emptyBanner.classList.remove('hidden');
+                else emptyBanner.classList.add('hidden');
+            }
+
+            renderGrid(weekDates) {
+                const container = document.getElementById('calendar-grid');
+                container.innerHTML = '';
+
+                const timeCol = document.createElement('div');
+                timeCol.className = 'time-col';
+                timeCol.innerHTML = '<div class="grid-header">Hora</div>';
+
+                for (let h = 6; h <= 23; h++) {
+                    const label = document.createElement('div');
+                    label.className = 'time-label';
+                    label.textContent = `${h.toString().padStart(2, '0')}:00`;
+                    timeCol.appendChild(label);
+                }
+                container.appendChild(timeCol);
+
+                weekDates.forEach((date) => {
+                    const dayCol = document.createElement('div');
+                    dayCol.className = 'day-col';
+                    dayCol.dataset.date = formatDateKey(date);
+
+                    const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' }).toUpperCase();
+                    dayCol.innerHTML = `<div class="grid-header">${dayName} ${date.getDate()}</div>`;
+
+                    for (let slot = 24; slot <= 95; slot++) {
+                        const slotDiv = document.createElement('div');
+                        const minutes = slot * 15;
+                        slotDiv.className = `slot-15m ${slot % 4 === 0 ? 'hour-start' : ''}`;
+                        slotDiv.dataset.time = formatMinutesToTime(minutes);
+                        dayCol.appendChild(slotDiv);
+                    }
+
+                    // Renderizar Atividades do dia
+                    const dateKey = formatDateKey(date);
+                    this.data.activities.filter(a => a.date === dateKey).forEach(act => {
+                        const startMin = parseTimeToMinutes(act.startTime);
+                        const endMin = parseTimeToMinutes(act.endTime);
+                        const topPx = (startMin - 360) * (18 / 15);
+                        const heightPx = (endMin - startMin) * (18 / 15);
+
+                        const block = document.createElement('div');
+                        block.className = 'activity-block';
+                        block.style.top = `${topPx}px`;
+                        block.style.height = `${heightPx}px`;
+                        block.innerHTML = `<strong>${act.title}</strong><div>${act.startTime} - ${act.endTime}</div>`;
+                        dayCol.appendChild(block);
+                    });
+
+                    // Evento de clique para criar
+                    dayCol.onclick = (e) => {
+                        if (e.target.classList.contains('slot-15m')) {
+                            const timeStr = e.target.dataset.time;
+                            const startMin = parseTimeToMinutes(timeStr);
+                            const endMin = startMin + 45; // Duração padrão 45m
+                            this.openFastCreate(dateKey, timeStr, formatMinutesToTime(endMin), e.clientX, e.clientY);
+                        }
+                    };
+
+                    container.appendChild(dayCol);
+                });
+            }
+
+            calculateFreeTime() {
+                const todayKey = formatDateKey(new Date());
+                const todayActs = this.data.activities.filter(a => a.date === todayKey);
+                const intervals = todayActs.map(a => ({ start: parseTimeToMinutes(a.startTime), end: parseTimeToMinutes(a.endTime) }));
+                const merged = mergeOverlappingIntervals(intervals);
+
+                let plannedMin = 0;
+                merged.forEach(i => plannedMin += (i.end - i.start));
+
+                const freeMin = Math.max(0, (17 * 60) - plannedMin); // 06:00 as 23:00 = 17 horas
+                document.getElementById('stat-free-time').textContent = `${Math.floor(freeMin / 60)}h ${freeMin % 60}m`;
+                document.getElementById('stat-planned-time').textContent = `${Math.floor(plannedMin / 60)}h ${plannedMin % 60}m`;
+            }
+
+            openFastCreate(dateStr, startTime, endTime, x, y) {
+                this.pendingCreation = { dateStr, startTime, endTime };
+                const popover = document.getElementById('fast-create-popover');
+                document.getElementById('fast-create-time-badge').textContent = `${startTime} - ${endTime}`;
+                popover.style.top = `${Math.min(y, window.innerHeight - 150)}px`;
+                popover.style.left = `${Math.min(x, window.innerWidth - 280)}px`;
+                popover.classList.remove('hidden');
+                document.getElementById('fast-create-title').focus();
+            }
+
+            saveFastActivity() {
+                const titleInput = document.getElementById('fast-create-title');
+                const title = titleInput.value.trim();
+                if (!title) return;
+
+                this.data.activities.push({
+                    id: Date.now(),
+                    title,
+                    date: this.pendingCreation.dateStr,
+                    startTime: this.pendingCreation.startTime,
+                    endTime: this.pendingCreation.endTime
+                });
+
+                saveAppData(this.data);
+                titleInput.value = '';
+                document.getElementById('fast-create-popover').classList.add('hidden');
+                this.render();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => new ChronosApp());
+    </script>
+</body>
+</html>
